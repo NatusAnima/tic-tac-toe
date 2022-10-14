@@ -51,7 +51,7 @@ body{
     position: absolute;
     /* 700px is the size of the container */
     height: calc((700px)/3);
-    /* visibility: hidden; */
+    visibility: hidden;
 }
 
 /* https://codepen.io/sosuke/pen/Pjoqqp */
