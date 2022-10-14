@@ -1,0 +1,68 @@
+body{
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background-color: gray;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.container{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    min-width: 700px;
+    max-height: 700px;
+    width: 700px;
+    height: 700px;
+}
+
+/* Squares shall be bordered */
+.square{
+    border: 2px solid rgb(0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.top-square{
+    border-top: 0px;
+}
+
+.left-side-square{
+    border-left: 0px;
+}
+
+.right-side-square{
+    border-right: 0px;
+}
+
+.bottom-square{
+    border-bottom: 0px;
+}
+
+.square:hover{
+    cursor: pointer;
+}
+
+/* overlaying circles and crosses and hiding them */
+
+.cross, .circle{
+    position: absolute;
+    /* 700px is the size of the container */
+    height: calc((700px)/3);
+    /* visibility: hidden; */
+}
+
+/* https://codepen.io/sosuke/pen/Pjoqqp */
+
+.cross{
+    
+    color: #ec3636;
+    filter: invert(21%) sepia(73%) saturate(4198%) hue-rotate(349deg) brightness(123%) contrast(85%);
+}
+
+.circle{
+    color: #2245e2;
+    filter: invert(22%) sepia(53%) saturate(7409%) hue-rotate(232deg) brightness(90%) contrast(97%);
+}
