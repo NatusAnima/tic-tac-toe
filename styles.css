@@ -3,6 +3,7 @@ body{
     height: 100vh;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     background-color: gray;
     font-family: 'Times New Roman', Times, serif;
 }
@@ -65,4 +66,13 @@ body{
 .circle{
     color: #2245e2;
     filter: invert(22%) sepia(53%) saturate(7409%) hue-rotate(232deg) brightness(90%) contrast(97%);
+}
+
+.reset{
+    color: red;
+    margin: 5px;
+}
+
+#info{
+    text-align: center;
 }

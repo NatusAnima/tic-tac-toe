@@ -1,25 +1,71 @@
 const gameBoard = (() => {
-    let gameBoard = ["", "", "", "", "", "", "", "", ""]
+    let gameBoard = [
+        "", "", "",
+        "", "", "",
+        "", "", ""]
     const status = (i) => gameBoard[i];
     const changeStatus = (i, status) => {
         gameBoard[i] = status
     };
 
+    const resetBoard = () => {
+
+        playerOne.resetHasWon();
+        playerTwo.resetHasWon();
+        const info = document.getElementById("info")
+        info.innerText = ("Score: " + playerOne.getWins() + "-" + playerTwo.getWins());
+
+        for (let index = 0; index < 9; index++) {
+            changeStatus(index, "");
+        }
+        displayController.updateScreen();
+    };
+
     return {
         status,
         changeStatus,
+        resetBoard,
     };
 })();
 
-const player = (marker) => {
+const player = (marker, wins, hasWonLast) => {
 
+    const HasWon = () => hasWonLast = true;
+    const resetHasWon = () => hasWonLast = false;
+    const IncrementWins = () => {
+        const info = document.getElementById("info")
+        let winner;
+        if (playerOne.getHasWonLast() && playerTwo.getHasWonLast()){
+            winner = "It's a tie!"
+        }
+        else if (playerOne.getHasWonLast()){
+            winner = "Player One Has Won!"
+            wins++;
+        }
+        else if (playerTwo.getHasWonLast()){
+            winner = "Player Two Has Won"
+            wins++;
+        }
+        info.innerText = ("Score: " + playerOne.getWins() + "-" + playerTwo.getWins() + "\n" + winner);
+        
+
+    }
+    const getWins = () => wins;
+    const getHasWonLast = () => hasWonLast;
     const getMarker = () => marker;
 
-    return { getMarker };
+    return {
+        getMarker,
+        getHasWonLast,
+        getWins,
+        HasWon,
+        resetHasWon,
+        IncrementWins,
+    };
 };
 
-const playerOne = player('X');
-const playerTwo = player('O');
+const playerOne = player('X', 0, false);
+const playerTwo = player('O', 0, false);
 
 const displayController = (() => {
 
@@ -34,6 +80,10 @@ const displayController = (() => {
             }
             else if (status == "O") {
                 square.lastElementChild.style.visibility = 'visible';
+            }
+            else if (status == "") {
+                square.firstElementChild.style.visibility = 'hidden';
+                square.lastElementChild.style.visibility = 'hidden';
             }
         }
     }
@@ -59,13 +109,193 @@ const turnController = (() => {
     }
 
     const Turn = (index) => {
-        if (gameBoard.status(index) == "") {
-            gameBoard.changeStatus(index, getCurrentTurn());
-            nextTurn();
-            displayController.updateScreen();
+
+        if (playerOne.getHasWonLast() == false && playerTwo.getHasWonLast() == false) {
+
+            if (gameBoard.status(index) == "") {
+                gameBoard.changeStatus(index, getCurrentTurn());
+                nextTurn();
+                displayController.updateScreen();
+            }
+
+            //Check if rows are the same and not empty
+            if (gameBoard.status(0) == gameBoard.status(1)
+                && gameBoard.status(1) == gameBoard.status(2)
+                && gameBoard.status(0) != ""
+                && gameBoard.status(1) != ""
+                && gameBoard.status(2) != "") {
+
+                if(gameBoard.status(0) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(0) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+
+            if (gameBoard.status(3) == gameBoard.status(4)
+                && gameBoard.status(4) == gameBoard.status(5)
+                && gameBoard.status(3) != ""
+                && gameBoard.status(4) != ""
+                && gameBoard.status(5) != "") {
+
+                if(gameBoard.status(3) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(3) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+            if (gameBoard.status(6) == gameBoard.status(7)
+                && gameBoard.status(7) == gameBoard.status(8)
+                && gameBoard.status(6) != ""
+                && gameBoard.status(7) != ""
+                && gameBoard.status(8) != "") {
+
+                if(gameBoard.status(6) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(6) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+            //Check if columns are the same and not empty
+            if (gameBoard.status(0) == gameBoard.status(3)
+                && gameBoard.status(3) == gameBoard.status(6)
+                && gameBoard.status(0) != ""
+                && gameBoard.status(3) != ""
+                && gameBoard.status(6) != "") {
+
+                if(gameBoard.status(0) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(0) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+
+            if (gameBoard.status(1) == gameBoard.status(4)
+                && gameBoard.status(4) == gameBoard.status(7)
+                && gameBoard.status(1) != ""
+                && gameBoard.status(4) != ""
+                && gameBoard.status(7) != "") {
+
+                if(gameBoard.status(1) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(1) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+
+            if (gameBoard.status(2) == gameBoard.status(5)
+                && gameBoard.status(5) == gameBoard.status(8)
+                && gameBoard.status(2) != ""
+                && gameBoard.status(5) != ""
+                && gameBoard.status(8) != "") {
+
+                if(gameBoard.status(2) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(2) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }            
+            //check diagonals
+
+            if (gameBoard.status(0) == gameBoard.status(4)
+                && gameBoard.status(4) == gameBoard.status(8)
+                && gameBoard.status(0) != ""
+                && gameBoard.status(4) != ""
+                && gameBoard.status(8) != "") {
+
+                if(gameBoard.status(0) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(0) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+
+            if (gameBoard.status(2) == gameBoard.status(4)
+                && gameBoard.status(4) == gameBoard.status(6)
+                && gameBoard.status(2) != ""
+                && gameBoard.status(4) != ""
+                && gameBoard.status(6) != "") {
+
+                if(gameBoard.status(2) == "X"){
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+
+                if(gameBoard.status(2) == "O"){
+                    playerTwo.HasWon();
+                    playerTwo.IncrementWins();
+                }
+                
+                displayController.updateScreen();
+                return;
+            }
+            
+            //check if tie
+            let counter = 0;
+            for (let index = 0; index < 9; index++) {
+                
+                if (gameBoard.status(index) != ""){
+                    counter++;
+                }
+                
+                if (counter == 9 ){
+                    playerTwo.HasWon();
+                    playerOne.HasWon();
+                    playerOne.IncrementWins();
+                }
+            }
+            counter = 0;
         }
     }
-
     const getCurrentTurn = () => currentTurn;
 
     return {
