@@ -12,7 +12,7 @@
 
 <body>
     <div class="title">Tic-Tac-Toe</div>
-    <div id="info">Score: 0-0 <br> </div>
+    <div id="info">Score: 0-0 <br> The game is on!</div>
     <div class="container">
         <div class="square left-side-square top-square" data-index="0" onclick="turnController.Turn(0)">
             <img src="source/cross.svg" class="cross" alt="Cross">
@@ -59,10 +59,12 @@
             <img src="source/circle.svg" class="circle" alt="circle">
         </div>
     </div>
-
-    <button class="reset" onclick="gameBoard.resetBoard()">
-        Reset
-    </button>
+    <div>
+        <button class="reset" role="button" onclick="gameBoard.resetBoard(true)">Reset PC VS AI</button>
+        <button class="reset" role="button" onclick="gameBoard.resetBoard(false)">Reset PC VS PC</button>
+    
+    </div>
+    
 </body>
 
 </html>
