@@ -4,6 +4,7 @@ const gameBoard = (() => {
         "", "", "",
         "", "", ""]
     const status = (i) => gameBoard[i];
+    const gameBoardFull = () => gameBoard;
     const changeStatus = (i, status) => {
         gameBoard[i] = status
     };
@@ -12,7 +13,7 @@ const gameBoard = (() => {
         if (isAIGame == false) {
             playerTwo.disablePlayerAI();
         }
-        else if (isAIGame == true){
+        else if (isAIGame == true) {
             playerTwo.togglePlayerAI();
         }
 
@@ -31,6 +32,7 @@ const gameBoard = (() => {
         status,
         changeStatus,
         resetBoard,
+        gameBoardFull
     };
 })();
 
@@ -40,6 +42,93 @@ const player = (marker, wins, hasWonLast, isAI) => {
     const isPlayerAI = () => isAI;
     const togglePlayerAI = () => isAI = true;
     const disablePlayerAI = () => isAI = false;
+
+    function findBestMove(board) {
+        let bestVal = -1000;
+        let bestMove = -1;
+
+        // Traverse all cells, evaluate
+        // minimax function for all empty
+        // cells. And return the cell
+        // with optimal value.
+        for (let i = 0; i < board.length; i++) {
+
+            // Check if cell is empty
+            if (board[i] == "") {
+
+                // Make the move
+                board[i] = getMarker();
+
+                // compute evaluation function
+                // for this move.
+                let moveVal = minimax(board, 0, false);
+
+                // Undo the move
+                board[i] = "";
+
+                // If the value of the current move
+                // is more than the best value, then
+                // update best
+                if (moveVal > bestVal) {
+                    bestMove = i;
+                    bestVal = moveVal;
+                }
+            }
+        }
+
+        return bestMove;
+    }
+
+    const minimax = (board, depth, isMax) => {
+        // If this maximizer's move
+        if (isMax) {
+            let best = -1000;
+
+            // Traverse all cells
+            for (let i = 0; i < 9; i++) {
+                // Check if cell is empty
+                if (board[i] == "") {
+
+                    // Make the move
+                    board[i] = getMarker();
+
+                    // Call minimax recursively
+                    // and choose the maximum value
+                    best = Math.max(best, minimax(board,
+                        depth + 1, !isMax));
+
+                    // Undo the move
+                    board[i] = "";
+
+                }
+            }
+            return best;
+        }
+        // If this minimizer's move
+        else {
+            let best = 1000;
+
+            // Traverse all cells
+            for (let i = 0; i < 9; i++) {
+                // Check if cell is empty
+                if (board[i] == "") {
+
+                    // Make the move
+                    board[i] = getMarker();
+
+                    // Call minimax recursively
+                    // and choose the minimum value
+                    best = Math.min(best, minimax(board,
+                        depth + 1, !isMax));
+
+                    // Undo the move
+                    board[i] = "";
+
+                }
+            }
+        }
+        return best;
+    }
 
     const HasWon = () => hasWonLast = true;
     const resetHasWon = () => hasWonLast = false;
@@ -62,14 +151,12 @@ const player = (marker, wins, hasWonLast, isAI) => {
 
     }
     const AITurn = () => {
-        currentPossibleIndex = [];
-        for (let index = 0; index < 9; index++) {
-            if (gameBoard.status(index) == "") {
-                currentPossibleIndex.push(index); 
-            }
-        }
 
-        return currentPossibleIndex[Math.floor(Math.random() * currentPossibleIndex.length)];
+        let bestMove = 0;
+
+        bestMove = findBestMove(gameBoard.gameBoardFull());
+
+        return bestMove;
     }
 
     const getWins = () => wins;
@@ -81,6 +168,7 @@ const player = (marker, wins, hasWonLast, isAI) => {
         togglePlayerAI,
         disablePlayerAI,
         AITurn,
+        findBestMove,
         getMarker,
         getHasWonLast,
         getWins,
@@ -147,7 +235,7 @@ const turnController = (() => {
                 nextTurn();
                 displayController.updateScreen();
             }
-
+            
 
             //Check if rows are the same and not empty
             if (gameBoard.status(0) == gameBoard.status(1)
