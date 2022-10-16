@@ -1,12 +1,14 @@
 const gameBoard = (() => {
+
     let gameBoard = [
-        "", "", "",
-        "", "", "",
-        "", "", ""]
-    const status = (i) => gameBoard[i];
+        ['', '', ''],
+        ['', '', ''],
+        ['', '', '']];
+
+    const status = (r, c) => gameBoard[r][c];
     const gameBoardFull = () => gameBoard;
-    const changeStatus = (i, status) => {
-        gameBoard[i] = status
+    const changeStatus = (r, c, status) => {
+        gameBoard[r][c] = status;
     };
 
     const resetBoard = (isAIGame) => {
@@ -22,16 +24,77 @@ const gameBoard = (() => {
         const info = document.getElementById("info")
         info.innerText = ("Score: " + playerOne.getWins() + "-" + playerTwo.getWins() + "\nThe Game is On!");
 
-        for (let index = 0; index < 9; index++) {
-            changeStatus(index, "");
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                changeStatus(i, j, "");
+            }
         }
         displayController.updateScreen();
     };
+
+    const evaluate = (b) => {
+        // Checking for Rows for X or O victory.
+        for (let row = 0; row < 3; row++) {
+            if (b[row][0] == b[row][1] &&
+                b[row][1] == b[row][2]) {
+                if (b[row][0] == playerOne.getMarker())
+                    return +10;
+
+                else if (b[row][0] == playerTwo.getMarker())
+                    return -10;
+            }
+        }
+
+        // Checking for Columns for X or O victory.
+        for (let col = 0; col < 3; col++) {
+            if (b[0][col] == b[1][col] &&
+                b[1][col] == b[2][col]) {
+                if (b[0][col] == playerOne.getMarker())
+                    return +10;
+
+                else if (b[0][col] == playerTwo.getMarker())
+                    return -10;
+            }
+        }
+
+        // Checking for Diagonals for X or O victory.
+        if (b[0][0] == b[1][1] && b[1][1] == b[2][2]) {
+            if (b[0][0] == playerOne.getMarker())
+                return +10;
+
+            else if (b[0][0] == playerTwo.getMarker())
+                return -10;
+        }
+
+        if (b[0][2] == b[1][1] &&
+            b[1][1] == b[2][0]) {
+            if (b[0][2] == playerOne.getMarker())
+                return +10;
+
+            else if (b[0][2] == playerTwo.getMarker())
+                return -10;
+        }
+
+        // Else if none of them have
+        // won then return 0
+        return 0;
+    }
+
+    const isMovesLeft = (b) => {
+        for (let i = 0; i < 3; i++)
+            for (let j = 0; j < 3; j++)
+                if (b[i][j] == '')
+                    return true;
+
+        return false;
+    }
 
     return {
         status,
         changeStatus,
         resetBoard,
+        evaluate,
+        isMovesLeft,
         gameBoardFull
     };
 })();
@@ -45,33 +108,35 @@ const player = (marker, wins, hasWonLast, isAI) => {
 
     function findBestMove(board) {
         let bestVal = -1000;
-        let bestMove = -1;
+        let bestMove = [0, 0];
 
         // Traverse all cells, evaluate
         // minimax function for all empty
         // cells. And return the cell
         // with optimal value.
-        for (let i = 0; i < board.length; i++) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
 
-            // Check if cell is empty
-            if (board[i] == "") {
+                // Check if cell is empty
+                if (board[i][j] == "") {
 
-                // Make the move
-                board[i] = getMarker();
+                    // Make the move
+                    board[i][j] = getMarker();
 
-                // compute evaluation function
-                // for this move.
-                let moveVal = minimax(board, 0, false);
+                    // compute evaluation function
+                    // for this move.
+                    let moveVal = minimax(board, 0, false);
 
-                // Undo the move
-                board[i] = "";
+                    // Undo the move
+                    board[i][j] = "";
 
-                // If the value of the current move
-                // is more than the best value, then
-                // update best
-                if (moveVal > bestVal) {
-                    bestMove = i;
-                    bestVal = moveVal;
+                    // If the value of the current move
+                    // is more than the best value, then
+                    // update best
+                    if (moveVal > bestVal) {
+                        bestMove = [i, j];
+                        bestVal = moveVal;
+                    }
                 }
             }
         }
@@ -80,54 +145,79 @@ const player = (marker, wins, hasWonLast, isAI) => {
     }
 
     const minimax = (board, depth, isMax) => {
+
+        let score = gameBoard.evaluate(board);
+
+        // If Maximizer has won the game
+        // return his/her evaluated score
+        if (score == 10)
+            return score;
+
+        // If Minimizer has won the game
+        // return his/her evaluated score
+        if (score == -10)
+            return score;
+
+        // If there are no more moves and
+        // no winner then it is a tie
+        if (gameBoard.isMovesLeft(board) == false)
+            return 0;
+
         // If this maximizer's move
         if (isMax) {
             let best = -1000;
 
             // Traverse all cells
-            for (let i = 0; i < 9; i++) {
-                // Check if cell is empty
-                if (board[i] == "") {
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    // Check if cell is empty
+                    if (board[i][j] == "") {
 
-                    // Make the move
-                    board[i] = getMarker();
+                        // Make the move
+                        board[i][j] = playerTwo.getMarker();
 
-                    // Call minimax recursively
-                    // and choose the maximum value
-                    best = Math.max(best, minimax(board,
-                        depth + 1, !isMax));
+                        // Call minimax recursively
+                        // and choose the maximum value
+                        best = Math.max(best, minimax(board,
+                            depth + 1, !isMax));
 
-                    // Undo the move
-                    board[i] = "";
+                        // Undo the move
+                        board[i][j] = "";
 
+                    }
                 }
+                return best;
             }
-            return best;
+            
         }
         // If this minimizer's move
         else {
             let best = 1000;
 
             // Traverse all cells
-            for (let i = 0; i < 9; i++) {
-                // Check if cell is empty
-                if (board[i] == "") {
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    // Check if cell is empty
+                    if (board[i][j] == "") {
 
-                    // Make the move
-                    board[i] = getMarker();
+                        // Make the move
+                        board[i][j] = playerOne.getMarker();
 
-                    // Call minimax recursively
-                    // and choose the minimum value
-                    best = Math.min(best, minimax(board,
-                        depth + 1, !isMax));
+                        // Call minimax recursively
+                        // and choose the minimum value
+                        best = Math.min(best, minimax(board,
+                            depth + 1, !isMax));
 
-                    // Undo the move
-                    board[i] = "";
+                        // Undo the move
+                        board[i][j] = "";
 
+                    }
                 }
             }
+            
+            return best;
         }
-        return best;
+        
     }
 
     const HasWon = () => hasWonLast = true;
@@ -143,7 +233,7 @@ const player = (marker, wins, hasWonLast, isAI) => {
             wins++;
         }
         else if (playerTwo.getHasWonLast()) {
-            winner = "Player Two Has Won"
+            winner = "Player Two Has Won";
             wins++;
         }
         info.innerText = ("Score: " + playerOne.getWins() + "-" + playerTwo.getWins() + "\n" + winner);
@@ -152,11 +242,11 @@ const player = (marker, wins, hasWonLast, isAI) => {
     }
     const AITurn = () => {
 
-        let bestMove = 0;
-
+        let bestMove;
+        //returns the index of the best move on the board
         bestMove = findBestMove(gameBoard.gameBoardFull());
-
         return bestMove;
+
     }
 
     const getWins = () => wins;
@@ -186,18 +276,20 @@ const displayController = (() => {
     const updateScreen = () => {
         let square;
         let status;
-        for (let index = 0; index < 9; index++) {
-            square = document.querySelector('[data-index="' + index + '"]');
-            status = gameBoard.status(index)
-            if (status == "X") {
-                square.firstElementChild.style.visibility = 'visible';
-            }
-            else if (status == "O") {
-                square.lastElementChild.style.visibility = 'visible';
-            }
-            else if (status == "") {
-                square.firstElementChild.style.visibility = 'hidden';
-                square.lastElementChild.style.visibility = 'hidden';
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                square = document.querySelector('[data-index="' + i + "," + j +'"]');
+                status = gameBoard.status(i, j)
+                if (status == "X") {
+                    square.firstElementChild.style.visibility = 'visible';
+                }
+                else if (status == "O") {
+                    square.lastElementChild.style.visibility = 'visible';
+                }
+                else if (status == "") {
+                    square.firstElementChild.style.visibility = 'hidden';
+                    square.lastElementChild.style.visibility = 'hidden';
+                }
             }
         }
     }
@@ -222,211 +314,52 @@ const turnController = (() => {
         return (currentTurn);
     }
 
-    const TurnAI = () => {
-
-    }
-
-    const Turn = (index) => {
+    const Turn = (r, c) => {
 
         if (playerOne.getHasWonLast() == false && playerTwo.getHasWonLast() == false) {
 
-            if (gameBoard.status(index) == "") {
-                gameBoard.changeStatus(index, getCurrentTurn());
+            if (gameBoard.status(r, c) == "") {
+                gameBoard.changeStatus(r, c, getCurrentTurn());
                 nextTurn();
                 displayController.updateScreen();
             }
-            
 
-            //Check if rows are the same and not empty
-            if (gameBoard.status(0) == gameBoard.status(1)
-                && gameBoard.status(1) == gameBoard.status(2)
-                && gameBoard.status(0) != ""
-                && gameBoard.status(1) != ""
-                && gameBoard.status(2) != "") {
+            let boardEvaluation = gameBoard.evaluate(gameBoard.gameBoardFull());
 
-                if (gameBoard.status(0) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(0) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
+            if (boardEvaluation == 10){
+                playerOne.HasWon();
+                playerOne.IncrementWins();
             }
 
-            if (gameBoard.status(3) == gameBoard.status(4)
-                && gameBoard.status(4) == gameBoard.status(5)
-                && gameBoard.status(3) != ""
-                && gameBoard.status(4) != ""
-                && gameBoard.status(5) != "") {
-
-                if (gameBoard.status(3) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(3) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
-            }
-            if (gameBoard.status(6) == gameBoard.status(7)
-                && gameBoard.status(7) == gameBoard.status(8)
-                && gameBoard.status(6) != ""
-                && gameBoard.status(7) != ""
-                && gameBoard.status(8) != "") {
-
-                if (gameBoard.status(6) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(6) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
-            }
-            //Check if columns are the same and not empty
-            if (gameBoard.status(0) == gameBoard.status(3)
-                && gameBoard.status(3) == gameBoard.status(6)
-                && gameBoard.status(0) != ""
-                && gameBoard.status(3) != ""
-                && gameBoard.status(6) != "") {
-
-                if (gameBoard.status(0) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(0) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
+            else if (boardEvaluation == -10){
+                playerTwo.HasWon();
+                playerTwo.IncrementWins();
             }
 
-            if (gameBoard.status(1) == gameBoard.status(4)
-                && gameBoard.status(4) == gameBoard.status(7)
-                && gameBoard.status(1) != ""
-                && gameBoard.status(4) != ""
-                && gameBoard.status(7) != "") {
-
-                if (gameBoard.status(1) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(1) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
+            else if (boardEvaluation == 0) {
+                gameBoard.isMovesLeft(gameBoard.gameBoardFull());
             }
 
-            if (gameBoard.status(2) == gameBoard.status(5)
-                && gameBoard.status(5) == gameBoard.status(8)
-                && gameBoard.status(2) != ""
-                && gameBoard.status(5) != ""
-                && gameBoard.status(8) != "") {
+            displayController.updateScreen();
 
-                if (gameBoard.status(2) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(2) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
-            }
-            //check diagonals
-
-            if (gameBoard.status(0) == gameBoard.status(4)
-                && gameBoard.status(4) == gameBoard.status(8)
-                && gameBoard.status(0) != ""
-                && gameBoard.status(4) != ""
-                && gameBoard.status(8) != "") {
-
-                if (gameBoard.status(0) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(0) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
-            }
-
-            if (gameBoard.status(2) == gameBoard.status(4)
-                && gameBoard.status(4) == gameBoard.status(6)
-                && gameBoard.status(2) != ""
-                && gameBoard.status(4) != ""
-                && gameBoard.status(6) != "") {
-
-                if (gameBoard.status(2) == "X") {
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-
-                if (gameBoard.status(2) == "O") {
-                    playerTwo.HasWon();
-                    playerTwo.IncrementWins();
-                }
-
-                displayController.updateScreen();
-                return;
-            }
-
-            //check if tie
-            let counter = 0;
-            for (let index = 0; index < 9; index++) {
-
-                if (gameBoard.status(index) != "") {
-                    counter++;
-                }
-
-                if (counter == 9) {
-                    playerTwo.HasWon();
-                    playerOne.HasWon();
-                    playerOne.IncrementWins();
-                }
-            }
-            counter = 0;
 
             //checking if the second player set to AI
             if (playerTwo.isPlayerAI() == true && getCurrentTurn() == playerTwo.getMarker()) {
-                turnController.Turn(playerTwo.AITurn());
+                //Asks the AITurn function which index is the best turn on the board
+                let moveAI = playerTwo.AITurn();
+                let r = moveAI[0];
+                let c = moveAI[1];
+                turnController.Turn(r, c);
             }
         }
     }
+
     const getCurrentTurn = () => currentTurn;
 
     return {
         getCurrentTurn,
         Turn,
         nextTurn,
-        TurnAI,
     }
 
 })();
